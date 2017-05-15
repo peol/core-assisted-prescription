@@ -1,0 +1,122 @@
+version: "3.1"
+
+services:
+  openresty:
+    # This is our externally-facing gateway, exposing the configured
+    # things for all end-users. It has the Analytics UI bundled into it.
+    # See https://github.com/qlik-ea/qliktive-openresty-custom-analytics
+    image: qlikea/qliktive-openresty-custom-analytics:master-25
+    command: -c /etc/nginx/swarm.conf
+    ports:
+      - "80:80"
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://localhost:12201"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  redis:
+    # The redis database stores sessions. The openresty gateway uses it to look
+    # up JWTs based on the session cookie, while the authentication service use
+    # it to create/delete these entries.
+    image: redis:3.0.7-alpine
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  elasticsearch:
+    # This service only runs as one instance in our stack and is
+    # used by Kibana (consuming) and Logstash (storing).
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.2.2
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      xpack.security.enabled: "false"
+      xpack.monitoring.enabled: "false"
+      xpack.graph.enabled: "false"
+      xpack.watcher.enabled: "false"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  logstash:
+    # Logstash runs as one instance on each node in the cluster
+    # since it's using the UDP protocol. Pushes all its collected
+    # logs to the elasticsearch instance.
+    # See https://github.com/qlik-ea/qliktive-logstash-custom-analytics
+    image: qlikea/qliktive-logstash-custom-analytics:master-3
+    ports:
+      - "12201:12201/udp"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    deploy:
+      mode: global
+
+  kibana:
+    # Used for visualizing and viewing logs stored in elasticsearch.
+    # See https://github.com/qlik-ea/qliktive-kibana-custom-analytics
+    image: qlikea/qliktive-kibana-custom-analytics:master-2
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  viz:
+    # A swarm visualizer, enables us to view what the cluster
+    # looks like, which services are running on which nodes etc.
+    image: manomarks/visualizer:latest
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  engine:
+    # QIX Engine is configured to run on all worker nodes in the
+    # cluster, and is the service we primarily want to scale up in
+    # this use-case.
+    image: qlikea/engine:12.15.0
+    command: -S TrafficLogVerbosity=5
+    volumes:
+      - /home/docker/data:/data
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://localhost:12201"
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == worker]
+
+  mira:
+    # Mira is our QIX Engine Discovery Service. It provides internal
+    # APIs to list (or query) all available QIX Engine containers
+    # in the cluster.
+    # See https://github.com/qlik-ea/mira
+    image: qlikea/mira:0.0.1-6
+    command: --mode=swarm
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - QIX_ENGINE_IMAGE_NAME=qlikea/engine
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://localhost:12201"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  # This service handles preparation of sessions against
+  # QIX Engines. Uses Mira to find appropriate containers
+  # to place the session on.
+  # See https://github.com/qlik-ea/qliktive-qix-session-service
+  qliktive-qix-session-service:
+    image: qlikea/qliktive-qix-session-service:0.0.1-10
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://localhost:12201"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
