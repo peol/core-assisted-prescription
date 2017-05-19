@@ -68,15 +68,30 @@ The following ports are exposed externally. Make sure you update your firewall t
 
 ## Test
 
-### E2E testing in swarm
-There is a set of basic e2e tests for verifying qix engine using enigma in a swarm. The test cases are either executed using the default naming convention from the ```create-swarm-cluster.sh```.
+There is a set of basic e2e tests for verifying qix engine using enigma in either a local setup or in a swarm.
+
+### E2E testing on a local setup
+
+To execute e2e tests on a local setup i.e. use-case was started using `docker-compose`.
+
 ```bash
 $ cd test
 $ npm run test:e2e
 ```
-or by specifying a specific manager node by hostname or IP
+
+### E2E testing in swarm
+
+The test cases can also be executed against a swarm deployment by either using the default naming convention from the ```create-swarm-cluster.sh```.
+
 ```bash
-$ SWARMMANAGER=<IP address or hostname> npm run test:e2e
+$ cd test
+$ npm run test:e2e:swarm
+```
+
+or by specifying a specific manager node by hostname or IP
+
+```bash
+$ SWARMMANAGER=<IP address or hostname> npm run test:e2e:swarm
 ```
 
 ## Terminology
