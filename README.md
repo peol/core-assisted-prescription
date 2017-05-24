@@ -1,5 +1,7 @@
 # qliktive-custom-analytics
 
+Read more about the use-case background [here](https://github.com/qlik-ea/info/tree/master/use-case-custom-analytics).
+
 **Warning**: This repo is under heavy development, we cannot guarantee that it works as described yet. Use at your own risk.
 
 This repo contains the Qliktive use-case we call "Custom Analytics UI". It's all about scaling a specific document, to many users (one engine, one document, many users), using Docker Swarm for cluster management.
