@@ -27,7 +27,13 @@ Before starting, make sure you have access to `qlikea` Docker Hub organization.
 
 You can easily start this use-case locally, without any Swarm deployment, by using `docker-compose`.
 
-Simply run:
+You need to generate certificates the first time you want to start this project:
+
+```bash
+$ ./deploy/create-certs.sh -a localhost
+```
+
+After that, simply run:
 
 ```bash
 $ docker-compose up
@@ -39,7 +45,7 @@ or in detached mode (recommended):
 $ docker-compose up -d
 ```
 
-You access it at http://localhost/. Read more in the [Routes section](#routes) about your available options.
+You access it at https://localhost/. Read more in the [Routes section](#routes) about your available options.
 
 ### Swarm (deployment)
 
@@ -68,7 +74,7 @@ This use-case is primarily about consuming a UI-based analytics website, and we 
 
 The following ports are exposed externally. Make sure you update your firewall to allow/decline access to these!
 
-* 80: Openresty (externally facing gateway).
+* 443: Openresty (externally facing gateway).
 * 12201: Logstash UDP input (temporarily needed since logdriver uses host network stack) - should not be accessible externally.
 
 ## Test
