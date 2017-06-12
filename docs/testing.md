@@ -33,3 +33,11 @@ Or, by setting the environment variable SWARMMANAGER to a specific manager node 
 ```sh
 $ SWARMMANAGER=<IP address or hostname> npm run test:e2e:swarm
 ```
+
+### Circle CI
+
+Circle CI makes use of remote docker spaces, hence the tests and data mounts must be containerized to be able to be executed from the job pipeline. To set up the environment and execute the test cases in the same scenario as performed in Circle CI just run:
+
+```sh
+$ ./scripts/run-e2e-tests-cci.sh
+```
