@@ -24,11 +24,18 @@ echo "========================================================================"
 
 for i in $(seq 1 $WORKERS); do
   MACHINE=$USERNAME-docker-worker$i
+  DRIVER=$(docker-machine inspect --format '{{.DriverName}}' $MACHINE)
 
   # Only deploy data if it does not already exists on host or if override switch was specified
   docker-machine ssh $MACHINE "ls /home/docker/data" &> /dev/null
   if [[ $? -eq 1 ||  $OVERWRITE -eq "1" ]]; then
     echo "-> deploying data to $MACHINE"
+
+    if [ $DRIVER == "amazonec2" ]; then
+      # Creating '/home/docker' on aws nodes
+      docker-machine ssh $MACHINE "sudo install -g ubuntu -o ubuntu -d /home/docker"
+    fi
+
     docker-machine scp -r ./data $MACHINE:/home/docker/
   else
     echo "Not deploying data to $MACHINE, since it already exists"

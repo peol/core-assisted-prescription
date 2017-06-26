@@ -12,7 +12,7 @@ print_usage () {
   echo
   echo "Usage:"
   echo "  create-swarm-cluster.sh -d <deployment> [-v <switch>]"
-  echo "  -d <deployment> - Type of deployment. Currently supported deployments are; local or vsphere"
+  echo "  -d <deployment> - Type of deployment. Currently supported deployments are; local / vsphere / amazonec2"
   echo "  -v <switch> - Windows only. Use <switch> as HyperV virtual switch".
   echo "                Overrides the HYPERV_VIRTUAL_SWITCH environment variable."
 }
@@ -38,15 +38,13 @@ do
   shift # past arg
 done
 
-if [[ -z "$DEPLOYMENT" ]]; then
-  echo "Error - No deployment provided."
-  echo "Use the -d option to set deployment to either local or vsphere"
-  print_usage
-  exit 1
-elif [ $DEPLOYMENT == "vsphere" ] || [ $DEPLOYMENT == "VSPHERE" ]; then
+if [ $DEPLOYMENT == "vsphere" ] || [ $DEPLOYMENT == "VSPHERE" ]; then
   DRIVER=vmwarevsphere
   SWITCH="--vmwarevsphere-boot2docker-url $(boot2docker_iso)"
-else
+elif [ $DEPLOYMENT == "amazonec2" ] || [ $DEPLOYMENT == "AMAZONEC2" ]; then
+  DRIVER=amazonec2
+  SWITCH=
+elif [ $DEPLOYMENT == "local" ] || [ $DEPLOYMENT == "LOCAL" ]; then
   # Windows - Use HyperV and determine HyperV virtual switch.
   if [[ $(uname -o) == "Msys" ]]; then
     if [[ -z "$SWITCH" ]]; then
@@ -68,6 +66,11 @@ else
     DRIVER=virtualbox
     SWITCH="--virtualbox-memory 2048 --virtualbox-boot2docker-url $(boot2docker_iso)"
   fi
+else
+  echo "Error - No valid deployment provided."
+  echo "Use the -d option to set deployment to either local / vsphere / amazonec2"
+  print_usage
+  exit 1
 fi
 
 echo "========================================================================"
@@ -98,14 +101,21 @@ echo "========================================================================"
 echo "  Init manager1 as the swarm manager"
 echo "========================================================================"
 eval $(docker-machine env $USERNAME-docker-manager1)
-docker swarm init --advertise-addr $(docker-machine ip $USERNAME-docker-manager1) --listen-addr $(docker-machine ip $USERNAME-docker-manager1):2377
+
+if [ $DRIVER == "amazonec2" ]; then
+  MANAGERIP=$(docker-machine inspect --format '{{.Driver.PrivateIPAddress}}' $USERNAME-docker-manager1)
+else
+  MANAGERIP=$(docker-machine ip $USERNAME-docker-manager1)
+fi
+
+docker swarm init --advertise-addr $MANAGERIP --listen-addr $MANAGERIP:2377
 
 MANAGERTOKEN=$(docker swarm join-token -q manager)
 WORKERTOKEN=$(docker swarm join-token -q worker)
 
 for node in $(seq 1 $WORKERS); do
     echo "-> worker$node joining swarm as worker ..."
-    docker-machine ssh $USERNAME-docker-worker$node docker swarm join --token $WORKERTOKEN $(docker-machine ip $USERNAME-docker-manager1):2377
+    docker-machine ssh $USERNAME-docker-worker$node "sudo docker swarm join --token $WORKERTOKEN $MANAGERIP:2377"
 done
 
 echo "========================================================================"
@@ -114,15 +124,25 @@ echo "  and setting hostname (reboot needed to register in DNS)"
 echo "========================================================================"
 
 for i in $(seq 1 $MANAGERS); do
-  echo "-> Increasing virtual memory vm.max_map_count on node manager$i for elasticsearch"
-  # Add to boot2docker profile so the setting is not lost after a reboot
-  docker-machine ssh $USERNAME-docker-manager$i "echo sysctl -w vm.max_map_count=262144 | sudo tee -a /var/lib/boot2docker/profile"
 
-  echo "-> Setting hostname to $USERNAME-docker-manager$i"
-  docker-machine ssh $USERNAME-docker-manager$i "sudo hostname $USERNAME-docker-manager$i"
+  if [ $DRIVER == "amazonec2" ]; then
+    echo "-> Increasing virtual memory vm.max_map_count on node manager$i for elasticsearch"
+    # Set initial value
+    docker-machine ssh $USERNAME-docker-manager$i "sudo sysctl -w vm.max_map_count=262144"
+    # Add to conf so the setting is not lost after a reboot
+    docker-machine ssh $USERNAME-docker-manager$i "echo sysctl -w vm.max_map_count=262144 | sudo tee -a /etc/sysctl.conf"
+  else
+    echo "-> Increasing virtual memory vm.max_map_count on node manager$i for elasticsearch"
+    # Add to boot2docker profile so the setting is not lost after a reboot
+    docker-machine ssh $USERNAME-docker-manager$i "echo sysctl -w vm.max_map_count=262144 | sudo tee -a /var/lib/boot2docker/profile"
 
-  echo "-> Restarting $USERNAME-docker-manager$i to register it in the DNS"
-  docker-machine restart $USERNAME-docker-manager$i
+    echo "-> Setting hostname to $USERNAME-docker-manager$i"
+    docker-machine ssh $USERNAME-docker-manager$i "sudo hostname $USERNAME-docker-manager$i"
+
+    echo "-> Restarting $USERNAME-docker-manager$i to register it in the DNS"
+    docker-machine restart $USERNAME-docker-manager$i
+  fi
+
 done
 
 echo "========================================================================"
@@ -146,7 +166,7 @@ echo "========================================================================"
 echo "  STATUS"
 echo "========================================================================"
 echo "-> list swarm nodes"
-docker-machine ssh $USERNAME-docker-manager1 docker node ls
+docker-machine ssh $USERNAME-docker-manager1 "sudo docker node ls"
 echo
 echo "-> list machines"
 docker-machine ls
