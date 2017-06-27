@@ -1,4 +1,4 @@
-# Deploying the use-case
+# Deploying the use case
 
 Deployment of the use case can be done both to the AWS environments and to a Swarm cluster provided by the developer. This section contains examples and step-by-steps for deployment into such different environments.
 
