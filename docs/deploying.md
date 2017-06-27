@@ -55,7 +55,7 @@ Step-by-step:
     ```bash
     $ ./scripts/create-swarm-cluster.sh -d amazonec2
     ```
-    By default the script will spin up `1 manager` node and `2 worker` nodes. When all nodes are up and running the script will finish with listing all the nodes.
+    By default the script will spin up `1 manager` node and `2 worker` nodes. When all nodes are up and running the script will finish by listing all the nodes.
 
 2. Now there are three VMs available in the setup, and the environment is ready for deployment.
     ```bash
