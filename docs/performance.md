@@ -17,4 +17,4 @@ _The performance benchmarking tool is under development._
 Currently, there are a number of limitations:
 
 * The tool does not yet make any real data manipulations towards the QIX Engine connections, to simulate actual user behavior.
-* The tool does not yet provide and performance metrics of the deployment.
+* The tool does not yet provide any performance metrics of the deployment.
