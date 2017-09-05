@@ -12,7 +12,7 @@ docker cp ./data/csv/. dummy-data:/data
 docker cp ./data/doc/. dummy-data:/doc
 docker cp ./secrets/. dummy-data:/secrets
 
-docker-compose up -d
+JWT_SECRET=$(cat ./secrets/JWT_SECRET) docker-compose up -d
 echo
 echo
 echo "CUSTOM ANALYTICS can be reached at https://localhost/"

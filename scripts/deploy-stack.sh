@@ -51,7 +51,7 @@ echo "========================================================================"
 
 eval $(docker-machine env $MACHINE)
 docker-compose -f docker-compose.yml -f docker-compose.logging.yml -f docker-compose.monitoring.yml pull
-docker-compose -f docker-compose.yml -f docker-compose.logging.yml -f docker-compose.monitoring.yml config > docker-compose.prod.yml
+JWT_SECRET=$(cat ./secrets/JWT_SECRET) docker-compose -f docker-compose.yml -f docker-compose.logging.yml -f docker-compose.monitoring.yml config > docker-compose.prod.yml
 docker stack deploy -c ./docker-compose.prod.yml --with-registry-auth custom-analytics
 
 echo
