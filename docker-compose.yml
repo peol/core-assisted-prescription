@@ -5,7 +5,7 @@ services:
     # This is our externally-facing gateway, exposing the configured
     # things for all end-users. It has the Analytics UI bundled into it.
     # See https://github.com/qlik-ea/qliktive-custom-analytics-openresty
-    image: qlikea/qliktive-custom-analytics-openresty:master-289
+    image: qlikea/qliktive-custom-analytics-openresty:master-291
     restart: always
     ports:
       - "443:443"
@@ -76,8 +76,9 @@ services:
     # APIs to list (or query) all available QIX Engine containers
     # in the cluster.
     # See https://github.com/qlik-ea/mira
-    image: qlikea/mira:0.0.1-263
-    command: --mode=swarm
+    image: qlikea/mira:0.0.2-359
+    environment:
+     - MIRA_MODE=swarm
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
@@ -106,7 +107,7 @@ services:
     # QIX Engines. Uses Mira to find appropriate containers
     # to place the session on.
     # See https://github.com/qlik-ea/qliktive-qix-session-service
-    image: qlikea/qliktive-qix-session-service:0.0.1-41
+    image: qlikea/qliktive-qix-session-service:0.0.1-46
     deploy:
       placement:
         constraints: [node.role == manager]
