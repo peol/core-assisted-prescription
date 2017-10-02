@@ -90,7 +90,7 @@ services:
     # cluster, and is the service we primarily want to scale up in
     # this use-case.
     image: qlikea/engine:12.59.0
-    command: -S ValidateJsonWebTokens=2 -S JsonWebTokenSecret=${JWT_SECRET}
+    command: -S ValidateJsonWebTokens=2 -S JsonWebTokenSecret=${JWT_SECRET} -S G3=1
     labels:
       qix-engine: ""
       qix-engine-port: "9076"
