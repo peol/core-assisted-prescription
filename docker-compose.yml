@@ -28,7 +28,14 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-
+  rabbitmq:
+    image: rabbitmq:3.6.12-management
+    hostname: "rabbitmq"
+    ports:
+      - "15672:15672"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
   redis:
     # The redis database stores sessions. The openresty gateway uses it to look
     # up JWTs based on the session cookie, while the authentication service use
@@ -55,7 +62,7 @@ services:
       COOKIE_SIGNING_FILE: /run/secrets/cookie_signing
       SUCCESS_REDIRECT_URL: /#/app
       FAILURE_REDIRECT_URL: /
-      AUTH_STRATEGY: github #change to 'local' to login via local username and password
+      AUTH_STRATEGY: local #change to 'local' to login via local username and password
       ACCOUNTS_FILE: /run/secrets/accounts_file
     deploy:
       placement:
@@ -90,7 +97,8 @@ services:
     # cluster, and is the service we primarily want to scale up in
     # this use-case.
     image: qlikea/engine:12.59.0
-    command: -S ValidateJsonWebTokens=2 -S JsonWebTokenSecret=${JWT_SECRET} -S G3=1
+    command: -S ValidateJsonWebTokens=2 -S JsonWebTokenSecret=${JWT_SECRET} -S UseEventBus=1 -S RabbitHost=rabbitmq:5672
+    # -S DocumentDirectory=/doc-S Gen3=1
     labels:
       qix-engine: ""
       qix-engine-port: "9076"
