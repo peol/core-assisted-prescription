@@ -73,7 +73,7 @@ function deploy_data() {
 
           if [ $AWS_EFS ]; then
             echo "Deploying with EFS file system"
-            ##docker-machine ssh $worker "mkdir -p /home/docker/data && sudo apt-get -y install nfs-common && sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 $AWS_EFS:/ /home/docker/data"
+            docker-machine ssh $worker "if ! df | grep /home/docker/data; then mkdir -p /home/docker/data && sudo apt-get -y install nfs-common && sudo mount -o silent -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 $AWS_EFS:/ /home/docker/data; fi"
           else
             docker-machine scp -r ./data $worker:/home/docker
           fi
