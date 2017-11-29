@@ -49,6 +49,22 @@ jobs:
             echo $JWT_SECRET > ~/qliktive-custom-analytics/secrets/JWT_SECRET
             ./local.sh deploy
       - run:
+          name: Wait for deployment to come up
+          command: |            
+            CONTAINER_ID=$(docker ps -aqf "name=openresty")
+            set +e
+            RETRIES=0
+            while [[ "$STATUS" != "running" && $RETRIES -le 30 ]]; do
+              STATUS=$(docker inspect -f '{{.State.Status}}' "$CONTAINER_ID")
+              echo -n "."
+              sleep 1
+              RETRIES=$[$RETRIES+1]
+            done
+            if [ "$STATUS" != "running" ]; then
+              echo "Gateway (Openresty) did not reach running state."
+              exit 1
+            fi
+      - run:
           name: Run E2E tests in remote Docker space
           command: ./run-e2e-tests-cci.sh
           working_directory: ~/qliktive-custom-analytics/scripts
