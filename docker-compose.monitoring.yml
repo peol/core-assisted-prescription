@@ -53,10 +53,13 @@ services:
     configs:
       - source: prometheus
         target: /etc/prometheus/prometheus.yml
+      - source: prometheus_alerts
+        target: /etc/prometheus/alert.rules
     command:
       - '-storage.local.target-heap-size=715827882'
       - '-storage.local.retention=720h'
       - '-config.file=/etc/prometheus/prometheus.yml'
+      - '-alertmanager.url=http://alertmanager:9093'
     deploy:
       placement:
         constraints: [node.role == manager]
@@ -64,6 +67,27 @@ services:
         limits:
           cpus: '0.50'
           memory: 1024M
+
+  alertmanager:
+    image: prom/alertmanager:v0.11.0
+    entrypoint: /init_alertmanager
+    secrets:
+      - slack_webhook
+    configs:
+      - source: alertmanager
+        target: /tmp/config.yml
+      - source: init_alertmanager
+        mode: 100
+    command: -config.file=/etc/alertmanager/config.yml
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
 
   grafana:
     image: grafana/grafana:4.3.2
@@ -108,3 +132,13 @@ configs:
     file: ./configs/grafana/qix-engine-dashboard.json
   prometheus:
     file: ./configs/prometheus/prometheus.yml
+  prometheus_alerts:
+    file: ./configs/prometheus/alert.rules
+  alertmanager:
+    file: ./configs/alertmanager/config.yml
+  init_alertmanager:
+    file: ./configs/alertmanager/init.sh
+
+secrets:
+  slack_webhook:
+    file: ./secrets/SLACK_WEBHOOK
