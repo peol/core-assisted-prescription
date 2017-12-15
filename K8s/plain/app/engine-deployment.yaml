@@ -4,20 +4,17 @@ metadata:
   name: engine
   labels:
     app: engine
-  annotations:
-    prometheus.io/scrape: "true"
 spec:
   replicas: 2
   template:
     metadata:
       labels:
         app: engine
-        service: engine
-        qix-engine:
+        qix-engine: ""
     spec:
       containers:
       - name: engine
-        image: "qlikea/engine:12.110.0"
+        image: qlikea/engine:12.110.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9076

@@ -1,0 +1,6 @@
+replicaCount: 1
+image: qlikea/qliktive-qix-session-service:0.0.1-61
+service:
+  name: qix-session
+  externalPort: 9455
+  internalPort: 9455

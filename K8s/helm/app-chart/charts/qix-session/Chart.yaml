@@ -1,0 +1,7 @@
+apiVersion: v1
+description: QIX Engine session placement
+name: qix-session
+version: 0.1.0
+home: https://github.com/qlik-ea/qliktive-qix-session-service
+sources:
+  - https://github.com/qlik-ea/qliktive-qix-session-service

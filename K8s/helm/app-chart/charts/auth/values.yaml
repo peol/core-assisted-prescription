@@ -1,0 +1,8 @@
+replicaCount: 1
+image: qlikea/qliktive-authentication-service:0.0.1-88
+service:
+  name: auth
+  externalPort: 3000
+  internalPort: 3000
+global:
+  serviceType: NodePort

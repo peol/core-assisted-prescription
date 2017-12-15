@@ -1,0 +1,19 @@
+global:
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: dockerhub
+  serviceType: NodePort
+
+engine:
+  image: qlikea/engine:12.110.0
+
+mira:
+  image: qlikea/mira:0.0.8
+
+qix-session:
+  image: qlikea/qliktive-qix-session-service:0.0.1-61
+
+redis:
+  image: redis:3.0.7-alpine
+
+auth:
+  image: qlikea/qliktive-authentication-service:0.0.1-88
