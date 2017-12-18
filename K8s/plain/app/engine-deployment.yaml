@@ -16,8 +16,21 @@ spec:
       - name: engine
         image: qlikea/engine:12.110.0
         imagePullPolicy: IfNotPresent
+        args: ["-S", "ValidateJsonWebTokens=2", "-S", "JsonWebTokenSecret=Insert-Long-GUID-For-JWT-Secret"]
         ports:
         - containerPort: 9076
         - containerPort: 9090
+        volumeMounts:
+        - name: doc-volume
+          mountPath: /doc
+        - name: data-volume
+          mountPath: /data
+      volumes:
+      - name: doc-volume
+        hostPath:
+          path: /home/docker/doc
+      - name: data-volume
+        hostPath:
+          path: /home/docker/csv
       imagePullSecrets:
       - name: dockerhub

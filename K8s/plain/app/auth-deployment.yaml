@@ -23,22 +23,22 @@ spec:
         - name: AUTH_STRATEGY
           value: "local"
         - name: ACCOUNTS_FILE
-          value: "/etc/secrets/ACCOUNTS"
+          value: "/etc/secrets/accounts/ACCOUNTS"
         - name: JWT_SECRET_FILE
-          value: "/etc/secrets/JWT_SECRET"
+          value: "/etc/secrets/jwt-secret/JWT_SECRET"
         - name: COOKIE_SIGNING_FILE
-          value: "/etc/secrets/COOKIE_SIGNING"
+          value: "/etc/secrets/cookie-signing/COOKIE_SIGNING"
         ports:
         - containerPort: 3000
         volumeMounts:
         - name: accounts
-          mountPath: "/etc/secrets"
+          mountPath: "/etc/secrets/accounts"
           readOnly: true
         - name: jwt-secret
-          mountPath: "/etc/secrets"
+          mountPath: "/etc/secrets/jwt-secret"
           readOnly: true
         - name: cookie-signing
-          mountPath: "/etc/secrets"
+          mountPath: "/etc/secrets/cookie-signing"
           readOnly: true
       volumes:
       - name: accounts

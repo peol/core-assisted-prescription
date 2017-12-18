@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openresty
+  labels:
+    app: openresty
+spec:
+  type: NodePort
+  ports:
+    - port: 443
+      targetPort: 443
+      protocol: TCP
+      name: openresty
+  selector:
+    app: openresty
