@@ -13,9 +13,11 @@ spec:
     spec:
       containers:
       - name: openresty
-        image: qlikea/qliktive-custom-analytics-openresty:master-344
+        image: qlikea/qliktive-custom-analytics-openresty:jm-k8s-dns-372
         imagePullPolicy: IfNotPresent
         env:
+        - name: ERROR_LEVEL
+          value: debug
         - name: SESSION_COOKIE_NAME
           value: custom-analytics
         - name: KIBANA_HOST

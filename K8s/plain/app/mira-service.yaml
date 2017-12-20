@@ -5,7 +5,7 @@ metadata:
   labels:
     app: mira
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 9100
       targetPort: 9100

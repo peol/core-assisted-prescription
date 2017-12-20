@@ -5,7 +5,7 @@ metadata:
   labels:
     app: engine
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 9076
       targetPort: 9076
