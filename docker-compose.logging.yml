@@ -18,7 +18,7 @@ services:
     # used by Kibana (consuming) and Logstash (storing).
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.0.0
     environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ES_JAVA_OPTS: "-Xmx1g -Xms1g"
     deploy:
       placement:
         constraints:
@@ -33,7 +33,7 @@ services:
     environment:
       LOG_LEVEL: warn
       LOG_FORMAT: json
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      LS_JAVA_OPTS: "-Xmx1g -Xms1g"
     deploy:
       placement:
         constraints:
