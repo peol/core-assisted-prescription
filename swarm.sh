@@ -228,7 +228,7 @@ function engine-workers() {
 
   function reduce_workers() {
     echo "Scaling engine-workers to $total_workers by removing $(($delta * -1))"
-    for i in $(seq $(($total_workers + 1)) 1 $current_workers); do		
+    for i in $(seq $(($total_workers + 1)) 1 $current_workers); do
       engine_worker="${machine_prefix}-engine-worker$i"
       echo "Removing $engine_worker"
       docker-machine ssh $engine_worker "sudo docker swarm leave"
@@ -249,7 +249,7 @@ function engine-workers() {
 
     for i in $(eval echo "{$(($current_workers + 1))..${total_workers}}"); do
       name="${machine_prefix}-engine-worker$i"
-      AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_WORKER:-$AWS_INSTANCE_TYPE_DEFAULT}" \      
+      AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_WORKER:-$AWS_INSTANCE_TYPE_DEFAULT}" \
       docker-machine create $switches --engine-label qix-engine=true $name
       docker-machine ssh $name "sudo docker swarm join --token $token $ip:2377"
     done
