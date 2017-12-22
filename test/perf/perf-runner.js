@@ -115,24 +115,29 @@ async function makeRandomSelection(sessions) {
   const sessionPercentageThatMakesSelections = args.selectionRatio || 0.1;
   const nrOfSelections = Math.ceil(sessions.length * sessionPercentageThatMakesSelections);
 
-  if (sessions[0]) {
-    const firstApp = await sessions[0].getActiveDoc();
-    const fieldNames = await getFieldNames(firstApp);
+  try{
+    if (sessions[0]) {
+      const firstApp = await sessions[0].getActiveDoc();
+      const fieldNames = await getFieldNames(firstApp);
 
-    for (let i = 0; i < nrOfSelections; i += 1) {
-      const qix = sessions[getRandomNumberBetween(0, sessions.length)];
+      for (let i = 0; i < nrOfSelections; i += 1) {
+        const qix = sessions[getRandomNumberBetween(0, sessions.length)];
 
-      /* eslint-disable no-await-in-loop */
-      try {
-        const app = await qix.getActiveDoc();
-        await doRandomSelection(app, fieldNames[getRandomNumberBetween(0, fieldNames.length)]);
-      } catch (e) {
-        logger.error('Error occured: ', e.message);
+        /* eslint-disable no-await-in-loop */
+        try {
+          const app = await qix.getActiveDoc();
+          await doRandomSelection(app, fieldNames[getRandomNumberBetween(0, fieldNames.length)]);
+        } catch (e) {
+          logger.error('Error occured: ', e.message);
+        }
       }
+      console.log('Process id: ', process.pid, ' -  Nr of selections made: ', Math.floor(nrOfSelections));
+    } else {
+      console.log(' No sessions to do selections on');
     }
-    console.log(' Nr of selections made: ', Math.floor(nrOfSelections));
-  } else {
-    console.log(' No sessions to do selections on');
+  }
+  catch(err){
+    console.log(' Error caught: ', err);
   }
 }
 
@@ -249,9 +254,6 @@ exports.start = async (workerNr) => {
   const selectionsInterval = args.selectionInterval || 10000;
 
   const selectionsIntevalFn = setInterval(() => {
-    // for(let j = 0 ; j < sessions.length; j++){
-    //   sessions[j].qvVersion();
-    // }
     makeRandomSelection(sessions);
   }, selectionsInterval);
 
