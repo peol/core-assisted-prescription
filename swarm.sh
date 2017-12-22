@@ -158,7 +158,8 @@ function create() {
   fi
 
   name="${machine_prefix}-manager1"
-  [[ -z "${AWS_INSTANCE_TYPE_MANAGER}" ]] && AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_DEFAULT}" || AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_MANAGER}"
+
+  AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_MANAGER:-$AWS_INSTANCE_TYPE_DEFAULT}" \
   docker-machine create $switches $name
   ip=$(docker-machine inspect --format '{{.Driver.PrivateIPAddress}}' $name)
 
@@ -173,8 +174,7 @@ function create() {
   function create-elk-worker() {
   token=$(docker swarm join-token -q worker) 
   
-  name="${machine_prefix}-elk-worker"
-  [[ -z "${AWS_INSTANCE_TYPE_ELK}" ]] && AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_DEFAULT}" || AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_ELK}"  
+  AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_ELK:-$AWS_INSTANCE_TYPE_DEFAULT}" \
   docker-machine create $switches --engine-label elk=true $name
   docker-machine ssh $name "sudo sysctl -w vm.max_map_count=262144"
 
@@ -243,14 +243,12 @@ function engine-workers() {
     if [ "$ip" == "<no value>" ]; then
       ip=$(docker-machine ip $manager)
     fi
-    
-    [[ -z "${AWS_INSTANCE_TYPE_WORKER}" ]] && AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_DEFAULT}" || AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_WORKER}"  
-    
     eval $(docker-machine env $manager)
     token=$(docker swarm join-token -q worker)
 
     for i in $(eval echo "{$(($current_workers + 1))..${total_workers}}"); do
       name="${machine_prefix}-engine-worker$i"
+      AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_WORKER:-$AWS_INSTANCE_TYPE_DEFAULT}" \      
       docker-machine create $switches --engine-label qix-engine=true $name
       docker-machine ssh $name "sudo docker swarm join --token $token $ip:2377"
     done
