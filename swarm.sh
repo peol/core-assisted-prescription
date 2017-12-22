@@ -80,7 +80,7 @@ function deploy_data() {
       docker-machine ssh $engine_worker "sudo install -g ubuntu -o ubuntu -d /home/docker"
     fi
 
-    docker-machine scp -r ./data $engine_worker:/home/docker/
+    docker-machine-v0.12.2 scp -r ./data $engine_worker:/home/docker/
   done
 }
 
@@ -172,8 +172,9 @@ function create() {
   docker swarm init --advertise-addr $ip --listen-addr $ip:2377
 
   function create-elk-worker() {
-  token=$(docker swarm join-token -q worker) 
-  
+  token=$(docker swarm join-token -q worker)
+
+  name="${machine_prefix}-elk-worker"
   AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_ELK:-$AWS_INSTANCE_TYPE_DEFAULT}" \
   docker-machine create $switches --engine-label elk=true $name
   docker-machine ssh $name "sudo sysctl -w vm.max_map_count=262144"
@@ -193,7 +194,7 @@ function create() {
 
   refresh_nodes
 
-  rest=2
+  rest=4
   engine-workers
 }
 
