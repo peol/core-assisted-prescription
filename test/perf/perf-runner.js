@@ -115,7 +115,7 @@ async function makeRandomSelection(sessions) {
   const sessionPercentageThatMakesSelections = args.selectionRatio || 0.1;
   const nrOfSelections = Math.ceil(sessions.length * sessionPercentageThatMakesSelections);
 
-  try{
+  try {
     if (sessions[0]) {
       const firstApp = await sessions[0].getActiveDoc();
       const fieldNames = await getFieldNames(firstApp);
@@ -135,8 +135,7 @@ async function makeRandomSelection(sessions) {
     } else {
       console.log(' No sessions to do selections on');
     }
-  }
-  catch(err){
+  } catch (err) {
     console.log(' Error caught: ', err);
   }
 }
