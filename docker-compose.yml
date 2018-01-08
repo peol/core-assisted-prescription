@@ -5,24 +5,15 @@ services:
     # This is our externally-facing gateway, exposing the configured
     # things for all end-users. It has the Analytics UI bundled into it.
     # See https://github.com/qlik-ea/qliktive-custom-analytics-openresty
-    image: qlikea/qliktive-custom-analytics-openresty:master-344
+    image: qlikea/qliktive-custom-analytics-openresty:master-377
     restart: always
     ports:
       - "443:443"
     environment:
+      # A prefix for session cookies, make sure this value is the same as in
+      # the 'auth' service.
       SESSION_COOKIE_NAME: custom-analytics
-      # kibana is defined in docker-compose.logging.yml, this is just here to
-      # satisfy openresty DNS resolve:
-      KIBANA_HOST: 127.0.0.1
-      KIBANA_PORT: 5601
-      GRAFANA_HOST: 127.0.0.1
-      GRAFANA_PORT: 5601
-      VISUALIZER_HOST: viz
-      VISUALIZER_PORT: 8080
-      QIX_SESSION_HOST: qix-session
-      QIX_SESSION_PORT: 9455
-      AUTH_HOST: auth
-      AUTH_PORT: 3000
+      # Possible values: 'github', 'local'. Default is 'local'.
       AUTH_STRATEGY: ${AUTH_STRATEGY:-local}
     deploy:
       placement:
@@ -59,22 +50,12 @@ services:
       placement:
         constraints: [node.role == manager]
 
-  viz:
-    # A swarm visualizer, enables us to view what the cluster
-    # looks like, which services are running on which nodes etc.
-    image: dockersamples/visualizer:stable
-    volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-
   mira:
     # Mira is our QIX Engine Discovery Service. It provides internal
     # APIs to list (or query) all available QIX Engine containers
     # in the cluster.
     # See https://github.com/qlik-ea/mira
-    image: qlikea/mira:0.0.8
+    image: qlikea/mira:0.0.10
     environment:
      - MIRA_MODE=swarm
     volumes:
@@ -87,7 +68,7 @@ services:
     # QIX Engine is configured to run on all worker nodes in the
     # cluster, and is the service we primarily want to scale up in
     # this use-case.
-    image: qlikea/engine:12.110.0
+    image: qlikea/engine:12.119.0
     command: -S ValidateJsonWebTokens=2 -S JsonWebTokenSecret=${JWT_SECRET}
     labels:
       qix-engine: ""
@@ -105,7 +86,7 @@ services:
     # QIX Engines. Uses Mira to find appropriate containers
     # to place the session on.
     # See https://github.com/qlik-ea/qliktive-qix-session-service
-    image: qlikea/qliktive-qix-session-service:0.0.1-61
+    image: qlikea/qliktive-qix-session-service:0.0.1-100
     deploy:
       placement:
         constraints: [node.role == manager]

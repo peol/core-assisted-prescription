@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "description": "Test cases and performance benchmarking for qliktive-custom-analytics use case",
-  "author": "Qlik",
+  "author": "QlikTech International AB",
   "license": "MIT",
   "scripts": {
     "lint": "eslint .",
@@ -16,12 +16,17 @@
   "devDependencies": {
     "after-work.js": "2.0.0",
     "command-line-args": "4.0.6",
-    "enigma.js": "1.1.1",
+    "enigma.js": "2.2.0",
     "eslint": "3.19.0",
     "eslint-config-airbnb-base": "11.2.0",
     "eslint-plugin-import": "2.3.0",
-    "halyard.js": "1.1.0",
-    "request": "^2.81.0",
+    "halyard.js": "1.3.0",
+    "request": "2.81.0",
+    "seedrandom": "2.4.3",
+    "winston": "2.4.0",
     "ws": "2.2.3"
+  },
+  "engines": {
+    "node": ">=8.0.x"
   }
 }

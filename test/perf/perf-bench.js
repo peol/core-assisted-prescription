@@ -1,6 +1,6 @@
 const cluster = require('cluster');
 const commandLineArgs = require('command-line-args');
-const perf = require('./perf-bench');
+const runner = require('./perf-runner');
 const os = require('os');
 
 const optionDefinitions = [
@@ -34,5 +34,5 @@ if (cluster.isMaster) {
   });
 } else {
   console.log(`Worker ${cluster.worker.id} with pid ${process.pid} started`);
-  perf.start(cluster.worker.id);
+  runner.start(cluster.worker.id);
 }
