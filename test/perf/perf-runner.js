@@ -94,6 +94,7 @@ async function doRandomSelection(app, fieldName) {
     const availableValues = sessionObjectLayout.qListObject.qDataPages[0].qMatrix;
     const randomValue = getRandomNumberBetween(0, availableValues.length);
     await sessionObject.selectListObjectValues('/qListObjectDef', [randomValue], true);
+    await app.destroySessionObject(sessionObject.id);
   } catch (e) {
     logger.error(' selections triggered error', e.message);
   }
@@ -106,11 +107,11 @@ async function sleep(delay) {
 }
 
 function displayConnections(sessions, errorCount) {
-  console.log('---------------------------------------');
-  console.log(' Process id: ', process.pid);
-  console.log(' Connection count: ', sessions.length);
-  console.log(' Total errors: ', errorCount);
-  console.log(' Memory used: ', process.memoryUsage().rss / 1024 / 1024, 'MB');
+  console.log(`---------------------------------------
+  Process id: ${process.pid}
+  Connection count: ${sessions.length}
+  Total errors: ${errorCount}
+  Memory used: ${process.memoryUsage().rss / 1024 / 1024} MB`);
 }
 
 async function makeRandomSelection(sessions) {
@@ -130,10 +131,11 @@ async function makeRandomSelection(sessions) {
           const app = await qix.getActiveDoc();
           await doRandomSelection(app, fieldNames[getRandomNumberBetween(0, fieldNames.length)]);
         } catch (e) {
-          logger.error('Error occured: ', e.message);
+          logger.error('Error occured while selecting: ', e.message);
+          logger.error('APP: ', firstApp);
         }
       }
-      console.log('Process id: ', process.pid, ' -  Nr of selections made: ', Math.floor(nrOfSelections));
+      console.log('Process id: ', process.pid, ' -  Nr of selections made: ', Math.floor(nrOfSelections), ' - No of sessions: ', sessions.length);
     } else {
       console.log(' No sessions to do selections on');
     }
@@ -144,7 +146,8 @@ async function makeRandomSelection(sessions) {
 
 const INTERACTION_AFTER_ADDED_SESSIONS = 50;
 
-async function connect(sessions, gateway, numConnections, delayBetween, cookie) {
+async function connect(sessions, gateway, numConnections, delayBetween) {
+
   let errorCount = 0;
   const interationcFunction = [displayConnections];
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -153,13 +156,14 @@ async function connect(sessions, gateway, numConnections, delayBetween, cookie) 
     await wait(delayBetween);
 
     try {
+      let cookie = await getLoginCookie();
       const qix = await enigma.create(getEnigmaConfig(gateway, cookie)).open();
       sessions.push(qix);
 
       await scenario.getScenario(qix);
     } catch (e) {
       // console.log(e);
-      logger.error('Error occured: ', e.message);
+      logger.error('Error occured while connecting: ', e.message);
       errorCount += 1;
     }
 
@@ -244,8 +248,8 @@ exports.start = async (workerNr) => {
   console.log('================================================================================');
 
   // Get login cookie
-  const loginCookie = await getLoginCookie().then(
-    (result) => { console.log(result); return result; });
+  // const loginCookie = await getLoginCookie().then(
+  //   (result) => { console.log(result); return result; });
 
 
   let sessions = [];
@@ -258,7 +262,7 @@ exports.start = async (workerNr) => {
     makeRandomSelection(sessions);
   }, selectionsInterval);
 
-  sessions = await connect(sessions, gateway, maxNumUsers, duration, loginCookie);
+  sessions = await connect(sessions, gateway, maxNumUsers, duration);
 
   console.log(' Disconnecting users');
 
