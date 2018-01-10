@@ -6,6 +6,7 @@ const request = require('request');
 const seedrandom = require('seedrandom');
 const logger = require('./logger/logger').get();
 const scenario = require('./scenarios/custom-analytics');
+const os = require('os');
 
 const optionDefinitions = [
   { name: 'gateway', alias: 'g', type: String, defaultValue: 'localhost' },
@@ -38,7 +39,7 @@ function generateGUID() {
   /* eslint-enable no-bitwise */
 }
 
-function getEnigmaConfig(gateway, id, cookie) {
+function getEnigmaConfig(gateway, cookie) {
   return {
     url: `wss://${gateway}/doc/doc/drugcases.qvf`,
     schema: qixSchema,
@@ -151,7 +152,7 @@ async function connect(sessions, gateway, numConnections, delayBetween, cookie) 
     await wait(delayBetween);
 
     try {
-      const qix = await enigma.create(getEnigmaConfig(gateway, generateGUID(), cookie)).open();
+      const qix = await enigma.create(getEnigmaConfig(gateway, cookie)).open();
       sessions.push(qix);
 
       await scenario.getScenario(qix);
@@ -219,7 +220,7 @@ process.on('uncaughtException', onUnhandledError);
 process.on('unhandledRejection', onUnhandledError);
 
 exports.start = async (workerNr) => {
-  seedrandom(`randomseed${workerNr}`, { global: true });
+  seedrandom(`${os.hostname()}_${workerNr}`, { global: true });
 
   const maxNumUsers = args.max;
 
