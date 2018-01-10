@@ -8,6 +8,8 @@ const logger = require('./logger/logger').get();
 const scenario = require('./scenarios/custom-analytics');
 const os = require('os');
 
+const MAX_RETRIES = 3;
+
 const optionDefinitions = [
   { name: 'gateway', alias: 'g', type: String, defaultValue: 'localhost' },
   { name: 'max', alias: 'm', type: Number },
@@ -50,6 +52,19 @@ function getEnigmaConfig(gateway, cookie) {
         'X-Qlik-Session': generateGUID(),
       },
     }),
+    responseInterceptors: [{
+      onRejected: function retryAbortedError(sessionReference, qixRequest, error) {
+        console.log('QIX Request: Rejected', error.message);
+        if (error.code === qixSchema.enums.LocalizedErrorCode.LOCERR_GENERIC_ABORTED) {
+          qixRequest.tries = (qixRequest.tries || 0) + 1; // eslint-disable-line no-param-reassign
+          console.log(`QIX Request: Retry #${qixRequest.tries}`);
+          if (qixRequest.tries <= MAX_RETRIES) {
+            return qixRequest.retry();
+          }
+        }
+        return this.Promise.reject(error);
+      },
+    }],
   };
 }
 
@@ -132,10 +147,10 @@ async function makeRandomSelection(sessions) {
           await doRandomSelection(app, fieldNames[getRandomNumberBetween(0, fieldNames.length)]);
         } catch (e) {
           logger.error('Error occured while selecting: ', e.message);
-          logger.error('APP: ', firstApp);
+          // logger.error('APP: ', firstApp);
         }
       }
-      console.log('Process id: ', process.pid, ' -  Nr of selections made: ', Math.floor(nrOfSelections), ' - No of sessions: ', sessions.length);
+      console.log(`Process id: ${process.pid} -  Nr of sessions | selections ( ${sessionPercentageThatMakesSelections * 100}% ) >> ${sessions.length} | ${nrOfSelections}`);
     } else {
       console.log(' No sessions to do selections on');
     }
@@ -147,7 +162,6 @@ async function makeRandomSelection(sessions) {
 const INTERACTION_AFTER_ADDED_SESSIONS = 50;
 
 async function connect(sessions, gateway, numConnections, delayBetween) {
-
   let errorCount = 0;
   const interationcFunction = [displayConnections];
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -156,7 +170,7 @@ async function connect(sessions, gateway, numConnections, delayBetween) {
     await wait(delayBetween);
 
     try {
-      let cookie = await getLoginCookie();
+      const cookie = await getLoginCookie();
       const qix = await enigma.create(getEnigmaConfig(gateway, cookie)).open();
       sessions.push(qix);
 
