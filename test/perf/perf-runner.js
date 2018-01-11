@@ -147,7 +147,6 @@ async function makeRandomSelection(sessions) {
           await doRandomSelection(app, fieldNames[getRandomNumberBetween(0, fieldNames.length)]);
         } catch (e) {
           logger.error('Error occured while selecting: ', e.message);
-          // logger.error('APP: ', firstApp);
         }
       }
       console.log(`Process id: ${process.pid} -  Nr of sessions | selections ( ${sessionPercentageThatMakesSelections * 100}% ) >> ${sessions.length} | ${nrOfSelections}`);
