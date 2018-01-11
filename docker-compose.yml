@@ -16,8 +16,7 @@ services:
       # Possible values: 'github', 'local'. Default is 'local'.
       AUTH_STRATEGY: ${AUTH_STRATEGY:-local}
     deploy:
-      placement:
-        constraints: [node.role == manager]
+      mode: global
 
   redis:
     # The redis database stores sessions. The openresty gateway uses it to look
@@ -87,9 +86,11 @@ services:
     # to place the session on.
     # See https://github.com/qlik-ea/qliktive-qix-session-service
     image: qlikea/qliktive-qix-session-service:0.0.1-102
+    environment:
+     - SESSION_STRATEGY=roundrobin
     deploy:
-      placement:
-        constraints: [node.role == manager]
+      mode: replicated
+      replicas: 4
 
 secrets:
   github_client_id:
