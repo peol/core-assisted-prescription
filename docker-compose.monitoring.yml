@@ -12,7 +12,7 @@ services:
         constraints: [node.role == manager]
 
   cadvisor:
-    image: google/cadvisor:v0.27.2
+    image: google/cadvisor:v0.28.3
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
