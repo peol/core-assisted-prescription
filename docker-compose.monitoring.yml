@@ -12,7 +12,7 @@ services:
         constraints: [node.role == manager]
 
   cadvisor:
-    image: google/cadvisor:v0.27.2
+    image: google/cadvisor:v0.28.3
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -21,10 +21,6 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     deploy:
       mode: global
-      resources:
-        limits:
-          cpus: '0.10'
-          memory: 128M
 
   node-exporter:
     image: basi/node-exporter:v1.15.0
@@ -43,20 +39,12 @@ services:
       - '--no-collector.ipvs'
     deploy:
       mode: global
-      resources:
-        limits:
-          cpus: '0.10'
-          memory: 32M
 
   docker-exporter:
     image: alpine/socat:1.0.1
     command: -d TCP-L:4999,fork TCP:172.18.0.1:4999
     deploy:
       mode: global
-      resources:
-        limits:
-          cpus: '0.05'
-          memory: 6M
 
   prometheus:
     image: prom/prometheus:v1.7.1
@@ -73,10 +61,6 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 1024M
 
   alertmanager:
     image: prom/alertmanager:v0.11.0
@@ -93,13 +77,6 @@ services:
       placement:
         constraints: [node.role == manager]
       replicas: 1
-      resources:
-        limits:
-          cpus: '0.15'
-          memory: 64M
-        reservations:
-          cpus: '0.05'
-          memory: 32M
 
   grafana:
     image: grafana/grafana:4.3.2
@@ -126,10 +103,6 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 64M
 
   openresty:
     environment:

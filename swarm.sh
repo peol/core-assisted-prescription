@@ -158,6 +158,8 @@ function create() {
   fi
 
   name="${machine_prefix}-manager1"
+
+  AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_MANAGER:-$AWS_INSTANCE_TYPE_DEFAULT}" \
   docker-machine create $switches $name
   ip=$(docker-machine inspect --format '{{.Driver.PrivateIPAddress}}' $name)
 
@@ -170,9 +172,10 @@ function create() {
   docker swarm init --advertise-addr $ip --listen-addr $ip:2377
 
   function create-elk-worker() {
-  token=$(docker swarm join-token -q worker) 
-  
+  token=$(docker swarm join-token -q worker)
+
   name="${machine_prefix}-elk-worker"
+  AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_ELK:-$AWS_INSTANCE_TYPE_DEFAULT}" \
   docker-machine create $switches --engine-label elk=true $name
   docker-machine ssh $name "sudo sysctl -w vm.max_map_count=262144"
 
@@ -225,7 +228,7 @@ function engine-workers() {
 
   function reduce_workers() {
     echo "Scaling engine-workers to $total_workers by removing $(($delta * -1))"
-    for i in $(seq $(($total_workers + 1)) 1 $current_workers); do		
+    for i in $(seq $(($total_workers + 1)) 1 $current_workers); do
       engine_worker="${machine_prefix}-engine-worker$i"
       echo "Removing $engine_worker"
       docker-machine ssh $engine_worker "sudo docker swarm leave"
@@ -241,12 +244,12 @@ function engine-workers() {
     if [ "$ip" == "<no value>" ]; then
       ip=$(docker-machine ip $manager)
     fi
-
     eval $(docker-machine env $manager)
     token=$(docker swarm join-token -q worker)
 
     for i in $(eval echo "{$(($current_workers + 1))..${total_workers}}"); do
       name="${machine_prefix}-engine-worker$i"
+      AWS_INSTANCE_TYPE="${AWS_INSTANCE_TYPE_WORKER:-$AWS_INSTANCE_TYPE_DEFAULT}" \
       docker-machine create $switches --engine-label qix-engine=true $name
       docker-machine ssh $name "sudo docker swarm join --token $token $ip:2377"
     done
@@ -282,12 +285,14 @@ function list() {
 
 refresh_nodes
 
-if   [ "$command" == "deploy" ];   then deploy_data && deploy_stack
-elif [ "$command" == "clean" ];    then clean
-elif [ "$command" == "validate" ]; then validate
-elif [ "$command" == "create" ];   then create
-elif [ "$command" == "remove" ];   then remove
-elif [ "$command" == "engine-workers" ];  then engine-workers
-elif [ "$command" == "ls" ];  then list
+if   [ "$command" == "deploy" ];        then deploy_data && deploy_stack
+elif [ "$command" == "deploy-data" ];   then deploy_data
+elif [ "$command" == "deploy-stack" ];  then deploy_stack
+elif [ "$command" == "clean" ];         then clean
+elif [ "$command" == "validate" ];      then validate
+elif [ "$command" == "create" ];        then create
+elif [ "$command" == "remove" ];        then remove
+elif [ "$command" == "engine-workers" ];then engine-workers
+elif [ "$command" == "ls" ];            then list
 
-else echo "Invalid option: $command - please use one of: deploy, clean, validate, create, remove, engine-workers"; fi
+else echo "Invalid option: $command - please use one of: deploy, clean, validate, create, remove, engine-workers, deploy-data, deploy-stack"; fi
