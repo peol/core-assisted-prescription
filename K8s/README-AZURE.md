@@ -28,7 +28,7 @@ ssh-keygen -f azure-public.key -i -mPKCS8 > azure-public_ssh-rsa
 
 ## Create the AKS Cluster
 
-**NOTE**: In the steps that follow it is assumed that the Azure Resource Group used is named `assisted-rg` and that the AK
+**NOTE**: In the steps that follow it is assumed that the Azure Resource Group used is named `assisted-rg` and that the AKS
 cluster created is called `assisted-cluster`. If other names are used, commands etc must be changed accordingly.
 
 Before creating the cluster a new Application Registration must be done, followed by creating a Service Principal.
