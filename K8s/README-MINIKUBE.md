@@ -1,27 +1,39 @@
-# Azure AKS Deployment Prototype
+# Minikube Deployment Prototype
 
-Prototyping work has been done to deploy the Assisted Prescription application to managed Kubernetes on Azure (AKS).
-The base components needed for the application are included in the deployment, but not the ELK stack, nor the Prometheus
+Prototyping work has been done to deploy the Assisted Prescription application to Kubernetes using Minikube. The base
+components needed for the application are included in the deployment, but not the ELK stack, nor the Prometheus
 monitoring capabilities.
+
+The sections below cover how to get the deployment up on a developer machine using Minikube.
 
 ## Install Tools
 
 - Install kubectl - https://kubernetes.io/docs/tasks/tools/install-kubectl  
   (Verified with v1.8.0)
-- ...
+- Install Minikube - https://kubernetes.io/docs/tasks/tools/install-minikube/#install-minikube  
+  (Verified with v0.24.1)
 
-## Create the Azure Kubernetes Cluster
+## Start the Minikube VM
 
-_TODO: Write this_
+Start a Minikube VM with Kubernetes version 1.8.0 (probably works on later versions as well). The example below shows
+how it can be done in a Windows environment:
+
+```sh
+$ minikube start --vm-driver hyperv --hyperv-virtual-switch MainSwitchEth --memory 4096 --kubernetes-version v1.8.0
+```
+
+Note how the HyperV VM manager and the virtual swith is specified with the options
+`--vm-driver hyperv --hyperv-virtual-switch MainSwitchEth`. The deployment has been verified to be workig on a VM with
+4096 MB of RAM.
 
 ## Copy Application Data
 
-Copy the data files used by the application to the AKS VM with:
+Copy the data files used by the application to the Minikube VM with (use default password `tcuser`):
 
 ```sh
 cd K8s/plain
-scp -i <private ssh key> -r ../../data/doc/ azureuser@$<ip>:/home/azureuser
-scp -i <private ssh key> -r ../../data/csv/ azureuser@$<ip>:/home/azureuser
+scp -r ../../data/doc/ docker@$(minikube ip):/home/docker
+scp -r ../../data/csv/ docker@$(minikube ip):/home/docker
 ```
 
 ## Prepare Secrets
@@ -59,8 +71,6 @@ service "redis" created
 
 ## Launch the Minikube Dashboard
 
-_TODO: Update this for Azure AKS_
-
 Observe that all workloads get deployed and get to running state by launchg the dashboard:
 
 ```sh
@@ -69,9 +79,7 @@ minikube dashboard
 
 ## Launch the Application
 
-_TODO: Update this for Azure AKS_
-
-Check the IP address of the Minkube VM. For example, with:
+Chek the IP address of the Minkube VM. For example, with:
 
 ```sh
 minikube ip

@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: openresty
-        image: qlikea/qliktive-custom-analytics-openresty:jm-k8s-dns-372
+        image: qlikea/qliktive-custom-analytics-openresty:jm-k8s-dns-378
         imagePullPolicy: IfNotPresent
         env:
         - name: ERROR_LEVEL

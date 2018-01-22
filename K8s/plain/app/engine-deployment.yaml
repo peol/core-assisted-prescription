@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: engine
-        image: qlikea/engine:12.110.0
+        image: qlikea/engine:12.119.0
         imagePullPolicy: IfNotPresent
         args: ["-S", "ValidateJsonWebTokens=2", "-S", "JsonWebTokenSecret=Insert-Long-GUID-For-JWT-Secret"]
         ports:
@@ -28,9 +28,9 @@ spec:
       volumes:
       - name: doc-volume
         hostPath:
-          path: /home/docker/doc
+          path: /home/azureuser/doc
       - name: data-volume
         hostPath:
-          path: /home/docker/csv
+          path: /home/azureuser/csv
       imagePullSecrets:
       - name: dockerhub

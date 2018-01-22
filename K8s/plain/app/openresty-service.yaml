@@ -5,12 +5,8 @@ metadata:
   labels:
     app: openresty
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
-    - port: 443
-      targetPort: 443
-      nodePort: 31704
-      protocol: TCP
-      name: openresty
+  - port: 443
   selector:
     app: openresty
