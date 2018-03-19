@@ -86,7 +86,7 @@ services:
     # This service handles preparation of sessions against
     # Qlik Associative Engines. Uses Mira to find appropriate containers
     # to place the session on.
-    # See https://github.com/qlik-ea/qliktive-qix-session-service
+    # See https://github.com/qlik-ea/core-session-placement-service
     image: qlikea/qliktive-qix-session-service:0.0.1-132
     deploy:
       placement:
